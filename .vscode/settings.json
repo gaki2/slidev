@@ -1,0 +1,6 @@
+{
+  "slidev.include": [
+    "**/slides.md",
+    "idb/slides.md"
+  ]
+}
