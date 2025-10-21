@@ -12,11 +12,12 @@ class: text-center
 drawings:
   persist: false 
 # slide transition: https://sli.dev/guide/animations.html#slide-transitions
-transition: slide-left
+transition: fade-out
 # enable MDC Syntax: https://sli.dev/features/mdc
 mdc: true
 fonts:
   sans: Roboto
+
 ---
 
 # Welcome to <span class="accent">IDB</span>
@@ -28,7 +29,7 @@ h1 > .accent {
   font-style: italic;
   font-size: 4.5rem;
   font-weight: 500;
-  color: yellow;
+  color: #ED8F03;
 }
 </style>
 
@@ -37,592 +38,386 @@ The last comment block of each slide will be treated as slide notes. It will be 
 -->
 
 ---
-transition: fade-out
----
+
 
 # IDB 와 LocalStorage 비교
 
-Slidev is a slides maker and presenter designed for developers, consist of the following features
+| 구분 | LocalStorage | IndexedDB |
+| :--- | :--- | :--- |
+| **저장용량** | 약 5MB로 제한됨 | 사용자 디스크 공간에 따라 유동적 |
+| **데이터 타입**| 문자열(String)만 지원함 | 다양한 데이터 타입(Object, File, Blob 등) 지원함 |
+| **API** | 동기(Synchronous) 방식 | 비동기(Asynchronous) 방식 |
+| **쿼리** | 단순 Key-Value, 복잡한 쿼리 불가 | 인덱스를 사용한 복잡한 쿼리 가능함 |
+| **용도** | 간단한 설정, 작은 데이터 저장에 적합 | 대용량 데이터, 오프라인 애플리케이션에 적합 |
+| **성능** | 동기식으로 메인 스레드 블로킹 가능 | 비동기식으로 메인 스레드 블로킹 없음 |
+| **Web Worker**| 사용 불가 | 사용 가능 |
 
-- 📝 **Text-based** - focus on the content with Markdown, and then style them later
-- 🎨 **Themable** - themes can be shared and re-used as npm packages
-- 🧑‍💻 **Developer Friendly** - code highlighting, live coding with autocompletion
-- 🤹 **Interactive** - embed Vue components to enhance your expressions
-- 🎥 **Recording** - built-in recording and camera view
-- 📤 **Portable** - export to PDF, PPTX, PNGs, or even a hostable SPA
-- 🛠 **Hackable** - virtually anything that's possible on a webpage is possible in Slidev
-<br>
-<br>
-
-Read more about [Why Slidev?](https://sli.dev/guide/why)
 
 <!--
 You can have `style` tag in markdown to override the style for the current page.
 Learn more: https://sli.dev/features/slide-scope-style
 -->
 
-<style>
-h1 {
-  background-color: #2B90B6;
-  background-image: linear-gradient(45deg, #4EC5D4 10%, #146b8c 20%);
-  background-size: 100%;
-  -webkit-background-clip: text;
-  -moz-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  -moz-text-fill-color: transparent;
-}
-</style>
-
 <!--
-Here is another comment.
+Q1. Idb 의 비동기가 의미하는 것
+Idb 의 접근은 메인 스레드가 아니라 별도의 스레드에서 실행된다.
+
+Q2. 그럼 워커에서 실행할 필요가 있나?
+일반적인 IndexedDB의 비동기 특성 덕분에, DB 접근 자체로는 메인 스레드를 블락하는 일이 없으니 ‘오로지 IndexedDB 사용’만을 목적으로 워커를 꼭 써야 하는 건 아닙니다.
+하지만, 워커 사용을 고려할 수 있는 경우는 다음과 같습니다:
+대용량 데이터 파싱/변환 등 CPU 집약 작업을 동반할 때
+예: IndexedDB에서 많은 데이터를 읽어와서 복잡한 계산, JSON 파싱, 압축 해제 등의 무거운 처리가 필요한 경우.
+이런 연산은 메인 스레드에서 하면 UI가 버벅일 수 있는데, 워커에서 하면 렌더링이 부드럽게 유지됩니다.
+데이터를 읽어온 뒤 추가적인 비동기 없는 연산이 이어질 때
 -->
 
 ---
-transition: slide-up
-level: 2
----
 
-# Navigation
+# 데이터베이스 인덱싱 (Indexing)
 
-Hover on the bottom-left corner to see the navigation's controls panel, [learn more](https://sli.dev/guide/ui#navigation-bar)
+데이터베이스 인덱스는 책의 **색인**과 같음.
 
-## Keyboard Shortcuts
+- **목적**: 테이블에서 원하는 데이터를 더 빠르게 찾기 위해 사용함.
+- **작동 방식**: 특정 컬럼의 값과 해당 레코드의 위치를 미리 정렬하여 저장해 둠.
+- **장점**: `SELECT` 쿼리의 검색 속도가 크게 향상됨.
+- **단점**:
+    - 인덱스 저장을 위한 추가 디스크 공간 필요.
+    - `INSERT`, `UPDATE`, `DELETE` 작업 시 인덱스도 업데이트되어 성능 저하 가능성 있음.
 
-|                                                     |                             |
-| --------------------------------------------------- | --------------------------- |
-| <kbd>right</kbd> / <kbd>space</kbd>                 | next animation or slide     |
-| <kbd>left</kbd>  / <kbd>shift</kbd><kbd>space</kbd> | previous animation or slide |
-| <kbd>up</kbd>                                       | previous slide              |
-| <kbd>down</kbd>                                     | next slide                  |
+<br/>
 
-<!-- https://sli.dev/guide/animations.html#click-animation -->
-<img
-  v-click
-  class="absolute -bottom-9 -left-7 w-80 opacity-50"
-  src="https://sli.dev/assets/arrow-bottom-left.svg"
-  alt=""
-/>
-<p v-after class="absolute bottom-23 left-45 opacity-30 transform -rotate-10">Here!</p>
-
----
-layout: two-cols
-layoutClass: gap-16
----
-
-# Table of contents
-
-You can use the `Toc` component to generate a table of contents for your slides:
-
-```html
-<Toc minDepth="1" maxDepth="1" />
-```
-
-The title will be inferred from your slide content, or you can override it with `title` and `level` in your frontmatter.
-
-::right::
-
-<Toc text-sm minDepth="1" maxDepth="2" />
-
----
-layout: image-right
-image: https://cover.sli.dev
----
-
-# Code
-
-Use code snippets and get the highlighting directly, and even types hover!
-
-```ts [filename-example.ts] {all|4|6|6-7|9|all} twoslash
-// TwoSlash enables TypeScript hover information
-// and errors in markdown code blocks
-// More at https://shiki.style/packages/twoslash
-import { computed, ref } from 'vue'
-
-const count = ref(0)
-const doubled = computed(() => count.value * 2)
-
-doubled.value = 2
-```
-
-<arrow v-click="[4, 5]" x1="350" y1="310" x2="195" y2="342" color="#953" width="2" arrowSize="1" />
-
-<!-- This allow you to embed external code blocks -->
-<<< @/snippets/external.ts#snippet
-
-<!-- Footer -->
-
-[Learn more](https://sli.dev/features/line-highlighting)
-
-<!-- Inline style -->
-<style>
-.footnotes-sep {
-  @apply mt-5 opacity-10;
-}
-.footnotes {
-  @apply text-sm opacity-75;
-}
-.footnote-backref {
-  display: none;
-}
-</style>
-
-<!--
-Notes can also sync with clicks
-
-[click] This will be highlighted after the first click
-
-[click] Highlighted with `count = ref(0)`
-
-[click:3] Last click (skip two clicks)
--->
-
----
-level: 2
----
-
-# Shiki Magic Move
-
-Powered by [shiki-magic-move](https://shiki-magic-move.netlify.app/), Slidev supports animations across multiple code snippets.
-
-Add multiple code blocks and wrap them with <code>````md magic-move</code> (four backticks) to enable the magic move. For example:
-
-````md magic-move {lines: true}
-```ts {*|2|*}
-// step 1
-const author = reactive({
-  name: 'John Doe',
-  books: [
-    'Vue 2 - Advanced Guide',
-    'Vue 3 - Basic Guide',
-    'Vue 4 - The Mystery'
-  ]
-})
-```
-
-```ts {*|1-2|3-4|3-4,8}
-// step 2
-export default {
-  data() {
-    return {
-      author: {
-        name: 'John Doe',
-        books: [
-          'Vue 2 - Advanced Guide',
-          'Vue 3 - Basic Guide',
-          'Vue 4 - The Mystery'
-        ]
-      }
-    }
-  }
-}
-```
-
-```ts
-// step 3
-export default {
-  data: () => ({
-    author: {
-      name: 'John Doe',
-      books: [
-        'Vue 2 - Advanced Guide',
-        'Vue 3 - Basic Guide',
-        'Vue 4 - The Mystery'
-      ]
-    }
-  })
-}
-```
-
-Non-code blocks are ignored.
-
-```vue
-<!-- step 4 -->
-<script setup>
-const author = {
-  name: 'John Doe',
-  books: [
-    'Vue 2 - Advanced Guide',
-    'Vue 3 - Basic Guide',
-    'Vue 4 - The Mystery'
-  ]
-}
-</script>
-```
-````
+*IndexedDB도 이름에서 알 수 있듯이, **인덱스**를 사용하여 데이터를 효율적으로 검색함.*
 
 ---
 
-# Components
+# 인덱싱 예시
 
-<div grid="~ cols-2 gap-4">
+<div class="flex h-full">
+  <img src="./db-index.png" class="m-auto h-full" />
+</div>
+
+---
+
+# 데이터베이스의 ACID 원칙
+
+ACID는 데이터베이스 트랜잭션이 안전하게 수행되기 위해 보장해야 하는 네 가지 속성을 의미함.
+
+<div class="grid grid-cols-2 gap-4">
 <div>
 
-You can use Vue components directly inside your slides.
+### **A**tomicity (원자성)
 
-We have provided a few built-in components like `<Tweet/>` and `<Youtube/>` that you can use directly. And adding your custom components is also super easy.
-
-```html
-<Counter :count="10" />
-```
-
-<!-- ./components/Counter.vue -->
-<Counter :count="10" m="t-4" />
-
-Check out [the guides](https://sli.dev/builtin/components.html) for more.
+- 트랜잭션의 모든 작업이 **전부 성공**하거나 **전부 실패**해야 함.
+- 'All or Nothing'
 
 </div>
 <div>
 
-```html
-<Tweet id="1390115482657726468" />
-```
+### **C**onsistency (일관성)
 
-<Tweet id="1390115482657726468" scale="0.65" />
+- 데이터베이스는 트랜잭션 성공 후 항상 **일관된 상태**를 유지해야 함.
+
+</div>
+<div>
+
+### **I**solation (고립성)
+
+- 여러 트랜잭션이 동시에 실행될 때, 서로에게 영향을 주지 않고 **독립적으로 실행**되는 것처럼 보여야 함.
+
+</div>
+<div>
+
+### **D**urability (지속성)
+
+- 성공적으로 완료된 트랜잭션의 결과는 시스템 오류 발생 시에도 **영구적으로 저장**되어야 함.
 
 </div>
 </div>
+
+---
+
+# IndexedDB 란?
+
+브라우저에 내장된 **Key-Value 형태의 NoSQL 데이터베이스**임.
+
+<div class="grid grid-cols-2 gap-x-12 gap-y-6 mt-8 text-left">
+
+<div class="flex items-start gap-4">
+  <div class="i-carbon-cloud text-5xl text-orange-500" />
+  <div>
+    <h5 class="font-bold">대용량 데이터 저장</h5>
+    <span class="text-sm">문자열, 파일, Blob 등 다양한 타입의 데이터 저장 가능.</span>
+  </div>
+</div>
+
+<div class="flex items-start gap-4">
+  <div class="i-carbon-async text-5xl text-orange-500" />
+  <div>
+    <h5 class="font-bold">비동기 API</h5>
+    <span class="text-sm">메인 스레드를 차단하지 않아 UI 반응성에 영향을 주지 않음.</span>
+  </div>
+</div>
+
+<div class="flex items-start gap-4">
+  <div class="i-carbon-task-approved text-5xl text-orange-500" />
+  <div>
+    <h5 class="font-bold">트랜잭션 지원</h5>
+    <span class="text-sm">ACID 원칙을 따르는 트랜잭션으로 데이터 무결성 보장.</span>
+  </div>
+</div>
+
+<div class="flex items-start gap-4">
+  <div class="i-carbon-search text-5xl text-orange-500" />
+  <div>
+    <h5 class="font-bold">인덱스 기반 쿼리</h5>
+    <span class="text-sm">인덱스를 사용하여 데이터를 빠르고 효율적으로 검색함.</span>
+  </div>
+</div>
+
+<div class="flex items-start gap-4">
+  <div class="i-carbon-security text-5xl text-orange-500" />
+  <div>
+    <h5 class="font-bold">동일 출처 정책</h5>
+    <span class="text-sm">동일 출처 정책으로, 생성된 출처에서만 DB 접근 가능.</span>
+  </div>
+</div>
+
+</div>
+
+---
+
+# IndexedDB: DB 생성 및 업그레이드
+
+`indexedDB.open()` 메소드로 데이터베이스를 열거나 생성함.
+
+```js
+const request = indexedDB.open('DeveloperDB', 1);
+
+// DB 버전이 변경되거나 처음 생성될 때 실행됨.
+request.onupgradeneeded = (event) => {
+  const db = event.target.result;
+  // 'developers' Object Store(테이블) 생성
+  const store = db.createObjectStore('developers', { keyPath: 'name' });
+  // 검색을 위한 인덱스 생성
+  store.createIndex('ageIndex', 'age', { unique: false });
+};
+
+let db; 
+
+request.onsuccess = (event) => {
+   db = event.target.result;
+};
+``` 
 
 <!--
-Presenter note with **bold**, *italic*, and ~~striked~~ text.
-
-Also, HTML elements are valid:
-<div class="flex w-full">
-  <span style="flex-grow: 1;">Left content</span>
-  <span>Right content</span>
-</div>
+-   **`open(dbName, version)`**: 데이터베이스 이름과 버전을 인자로 받음.
+-   **`onupgradeneeded`**: 스키마(Object Store, Index) 변경은 이 이벤트 핸들러 내에서만 가능함.
+-   **`createObjectStore`**: RDB의 테이블과 유사. `keyPath`가 Primary Key 역할.
+-   **`createIndex`**: 특정 속성을 기준으로 데이터를 검색하도록 인덱스 생성.
 -->
 
 ---
-class: px-20
----
 
-# Themes
+# IndexedDB: 트랜잭션을 이용한 CRUD
 
-Slidev comes with powerful theming support. Themes can provide styles, layouts, components, or even configurations for tools. Switching between themes by just **one edit** in your frontmatter:
+데이터 추가, 조회, 수정, 삭제는 모두 **트랜잭션** 내에서 이루어져야 함.
 
-<div grid="~ cols-2 gap-2" m="t-2">
+<div class="grid grid-cols-2 gap-4 mt-4">
 
-```yaml
----
-theme: default
----
+<div>
+<h5>Create (추가)</h5>
+```js
+const tx = db.transaction('developers', 'readwrite');
+const store = tx.objectStore('developers');
+store.add({
+  name: 'Alice',
+  age: 30,
+  salary: 5000,
+  lang: 'JavaScript'
+});
 ```
+</div>
 
-```yaml
----
-theme: seriph
----
+<div>
+<h5>Read (조회)</h5>
+```js
+const tx = db.transaction('developers', 'readonly');
+const store = tx.objectStore('developers');
+const req = store.get('Alice');
+req.onsuccess = () => {
+  console.log(req.result);
+};
 ```
+</div>
 
-<img border="rounded" src="https://github.com/slidevjs/themes/blob/main/screenshots/theme-default/01.png?raw=true" alt="">
+<div>
+<h5>Update (수정)</h5>
+```js
+const tx = db.transaction('developers', 'readwrite');
+const store = tx.objectStore('developers');
+store.put({
+  name: 'Alice', // keyPath 값은 동일
+  age: 31,
+  salary: 5500,
+  lang: 'TypeScript'
+});
+```
+</div>
 
-<img border="rounded" src="https://github.com/slidevjs/themes/blob/main/screenshots/theme-seriph/01.png?raw=true" alt="">
+<div>
+<h5>Delete (삭제)</h5>
+```js
+const tx = db.transaction('developers', 'readwrite');
+const store = tx.objectStore('developers');
+store.delete('Alice');
+```
+</div>
 
 </div>
 
-Read more about [How to use a theme](https://sli.dev/guide/theme-addon#use-theme) and
-check out the [Awesome Themes Gallery](https://sli.dev/resources/theme-gallery).
+<!--
+Transaction Inactivity: An IDBTransaction will automatically become inactive and potentially commit if there are no pending requests associated with it at the end of the current JavaScript event loop iteration. setTimeout schedules a callback to run in a future task, effectively pausing the current task and allowing the IndexedDB transaction to become inactive before the setTimeout callback executes.
+-->
 
 ---
 
-# Clicks Animations
+# IndexedDB: 데이터 지속성 (Durability)
 
-You can add `v-click` to elements to add a click animation.
+트랜잭션 생성 시 `durability` 옵션으로 디스크 기록 시점 제어, 안정성과 성능의 균형을 맞춤.
 
-<div v-click>
-
-This shows up when you click the slide:
-
-```html
-<div v-click>This shows up when you click the slide.</div>
+```js
+const tx = db.transaction(
+  'developers',
+  'readwrite',
+  { durability: 'strict' } // durability 옵션 지정
+);
 ```
 
-</div>
-
-<br>
-
-<v-click>
-
-The <span v-mark.red="3"><code>v-mark</code> directive</span>
-also allows you to add
-<span v-mark.circle.orange="4">inline marks</span>
-, powered by [Rough Notation](https://roughnotation.com/):
-
-```html
-<span v-mark.underline.orange>inline markers</span>
-```
-
-</v-click>
-
-<div mt-20 v-click>
-
-[Learn more](https://sli.dev/guide/animations#click-animation)
-
-</div>
+-   `default`
+    -   브라우저의 기본 동작. 일반적으로 성능과 안정성의 균형을 맞춘 설정임.
+-   `strict`
+    -   **높은 안정성**: 트랜잭션 `complete` 전 OS가 디스크에 즉시 기록하도록 요청. 시스템 충돌 시 데이터 유실 확률 매우 낮음.
+-   `relaxed`
+    -   **높은 성능**: OS가 자체 버퍼링 전략에 따라 디스크에 기록. 디스크 I/O가 줄어 성능은 향상되나 시스템 충돌 시 데이터 유실 가능성 있음.
 
 ---
 
-# Motions
+# IndexedDB: 인덱스와 커서를 이용한 조회
 
-Motion animations are powered by [@vueuse/motion](https://motion.vueuse.org/), triggered by `v-motion` directive.
+인덱스로 keyPath 외 다른 속성으로 효율적인 검색 가능. 커서는 여러 데이터 순회 시 사용함.
 
-```html
-<div
-  v-motion
-  :initial="{ x: -80 }"
-  :enter="{ x: 0 }"
-  :click-3="{ x: 80 }"
-  :leave="{ x: 1000 }"
->
-  Slidev
-</div>
+<div class="grid grid-cols-2 gap-4 mt-4">
+
+<div>
+<h5>Index로 조회하기</h5>
+<p class="text-sm">30세 이상 모든 개발자 찾기</p>
+```js
+const tx = db.transaction('developers', 'readonly');
+const store = tx.objectStore('developers');
+const index = store.index('ageIndex');
+
+// 30 이상인 key 범위 지정
+const range = IDBKeyRange.lowerBound(30);
+
+const req = index.getAll(range);
+req.onsuccess = () => {
+  console.log(req.result); // 30세 이상 개발자 배열
+};
 ```
-
-<div class="w-60 relative">
-  <div class="relative w-40 h-40">
-    <img
-      v-motion
-      :initial="{ x: 800, y: -100, scale: 1.5, rotate: -50 }"
-      :enter="final"
-      class="absolute inset-0"
-      src="https://sli.dev/logo-square.png"
-      alt=""
-    />
-    <img
-      v-motion
-      :initial="{ y: 500, x: -100, scale: 2 }"
-      :enter="final"
-      class="absolute inset-0"
-      src="https://sli.dev/logo-circle.png"
-      alt=""
-    />
-    <img
-      v-motion
-      :initial="{ x: 600, y: 400, scale: 2, rotate: 100 }"
-      :enter="final"
-      class="absolute inset-0"
-      src="https://sli.dev/logo-triangle.png"
-      alt=""
-    />
-  </div>
-
-  <div
-    class="text-5xl absolute top-14 left-40 text-[#2B90B6] -z-1"
-    v-motion
-    :initial="{ x: -80, opacity: 0}"
-    :enter="{ x: 0, opacity: 1, transition: { delay: 2000, duration: 1000 } }">
-    Slidev
-  </div>
 </div>
 
-<!-- vue script setup scripts can be directly used in markdown, and will only affects current page -->
-<script setup lang="ts">
-const final = {
-  x: 0,
-  y: 0,
-  rotate: 0,
-  scale: 1,
-  transition: {
-    type: 'spring',
-    damping: 10,
-    stiffness: 20,
-    mass: 2
+<div>
+<h5>Cursor로 순회하기</h5>
+<p class="text-sm">데이터를 하나씩 순회하며 작업</p>
+```js
+const tx = db.transaction('developers', 'readonly');
+const store = tx.objectStore('developers');
+const index = store.index('ageIndex');
+
+const req = index.openCursor();
+req.onsuccess = (event) => {
+  const cursor = event.target.result;
+  if (cursor) {
+    console.log(cursor.value);
+    cursor.continue(); // 다음 데이터로 이동
+  } else {
+    console.log('No more entries!');
   }
-}
-</script>
-
-<div
-  v-motion
-  :initial="{ x:35, y: 30, opacity: 0}"
-  :enter="{ y: 0, opacity: 1, transition: { delay: 3500 } }">
-
-[Learn more](https://sli.dev/guide/animations.html#motion)
+};
+```
+</div>
 
 </div>
 
 ---
 
-# LaTeX
+# IndexedDB: 에러 핸들링 및 롤백
 
-LaTeX is supported out-of-box. Powered by [KaTeX](https://katex.org/).
+모든 요청과 트랜잭션은 실패 가능. `onerror` 이벤트 핸들러로 오류 처리 필수.
 
-<div h-3 />
+```js
+// DB 열기 요청 에러 발생 시
+request.onerror = (event) => {
+  console.error(`Database error: ${event.target.errorCode}`);
+};
 
-Inline $\sqrt{3x-1}+(1+x)^2$
+// 트랜잭션 내 에러 발생 시
+const tx = db.transaction('developers', 'readwrite');
+tx.onerror = (event) => {
+  console.error(`Transaction error: ${event.target.error}`);
+};
 
-Block
-$$ {1|3|all}
-\begin{aligned}
-\nabla \cdot \vec{E} &= \frac{\rho}{\varepsilon_0} \\
-\nabla \cdot \vec{B} &= 0 \\
-\nabla \times \vec{E} &= -\frac{\partial\vec{B}}{\partial t} \\
-\nabla \times \vec{B} &= \mu_0\vec{J} + \mu_0\varepsilon_0\frac{\partial\vec{E}}{\partial t}
-\end{aligned}
-$$
+const store = tx.objectStore('developers');
+// 이미 존재하는 keyPath 'Alice' 추가 시 에러 발생
+const req = store.add({ name: 'Alice', age: 35, ... });
 
-[Learn more](https://sli.dev/features/latex)
+// 개별 요청의 에러는 트랜잭션 전체에 전파됨.
+req.onerror = (event) => {
+  console.error(`Add request error: ${event.target.error}`);
+};
+```
+- 자동 롤백: 트랜잭션 내 한 작업이라도 실패하면 모든 작업이 자동으로 롤백되어 데이터 일관성 유지됨.
 
 ---
-
-# Diagrams
-
-You can create diagrams / graphs from textual descriptions, directly in your Markdown.
-
-<div class="grid grid-cols-4 gap-5 pt-4 -mb-6">
-
-```mermaid {scale: 0.5, alt: 'A simple sequence diagram'}
-sequenceDiagram
-    Alice->John: Hello John, how are you?
-    Note over Alice,John: A typical interaction
-```
-
-```mermaid {theme: 'neutral', scale: 0.8}
-graph TD
-B[Text] --> C{Decision}
-C -->|One| D[Result 1]
-C -->|Two| E[Result 2]
-```
-
-```mermaid
-mindmap
-  root((mindmap))
-    Origins
-      Long history
-      ::icon(fa fa-book)
-      Popularisation
-        British popular psychology author Tony Buzan
-    Research
-      On effectiveness<br/>and features
-      On Automatic creation
-        Uses
-            Creative techniques
-            Strategic planning
-            Argument mapping
-    Tools
-      Pen and paper
-      Mermaid
-```
-
-```plantuml {scale: 0.7}
-@startuml
-
-package "Some Group" {
-  HTTP - [First Component]
-  [Another Component]
-}
-
-node "Other Groups" {
-  FTP - [Second Component]
-  [First Component] --> FTP
-}
-
-cloud {
-  [Example 1]
-}
-
-database "MySql" {
-  folder "This is my folder" {
-    [Folder 3]
-  }
-  frame "Foo" {
-    [Frame 4]
-  }
-}
-
-[Another Component] --> [Example 1]
-[Example 1] --> [Folder 3]
-[Folder 3] --> [Frame 4]
-
-@enduml
-```
-
-</div>
-
-Learn more: [Mermaid Diagrams](https://sli.dev/features/mermaid) and [PlantUML Diagrams](https://sli.dev/features/plantuml)
-
----
-foo: bar
-dragPos:
-  square: 691,32,167,_,-16
+layout: default
 ---
 
-# Draggable Elements
+# 정리
 
-Double-click on the draggable elements to edit their positions.
+### Key Takeaways
 
-<br>
+- **IndexedDB는 단순한 저장소가 아닌, 브라우저의 진짜 '데이터베이스'**
+  <br/>
+  
+- **모든 것은 비동기(Asynchronous)와 트랜잭션(Transaction) 위에서 동작**
+  <br/>
+  메인 스레드를 막지 않고, 데이터 무결성 보장.
 
-###### Directive Usage
+- **인덱스(Index)를 적극적으로 활용**
+  <br/>
+  데이터 검색 성능을 극대화하는 핵심.
 
-```md
-<img v-drag="'square'" src="https://sli.dev/logo.png">
-```
+### Wrapper Library 사용하기
 
-<br>
+네이티브 API는 복잡. 실제 프로젝트에서는 `Promise` 기반 라이브러리 사용이 유리함
 
-###### Component Usage
-
-```md
-<v-drag text-3xl>
-  <div class="i-carbon:arrow-up" />
-  Use the `v-drag` component to have a draggable container!
-</v-drag>
-```
-
-<v-drag pos="663,206,261,_,-15">
-  <div text-center text-3xl border border-main rounded>
-    Double-click me!
-  </div>
-</v-drag>
-
-<img v-drag="'square'" src="https://sli.dev/logo.png">
-
-###### Draggable Arrow
-
-```md
-<v-drag-arrow two-way />
-```
-
-<v-drag-arrow pos="67,452,253,46" two-way op70 />
-
----
-src: ./pages/imported-slides.md
-hide: false
----
-
----
-
-# Monaco Editor
-
-Slidev provides built-in Monaco Editor support.
-
-Add `{monaco}` to the code block to turn it into an editor:
-
-```ts {monaco}
-import { ref } from 'vue'
-import { emptyArray } from './external'
-
-const arr = ref(emptyArray(10))
-```
-
-Use `{monaco-run}` to create an editor that can execute the code directly in the slide:
-
-```ts {monaco-run}
-import { version } from 'vue'
-import { emptyArray, sayHello } from './external'
-
-sayHello()
-console.log(`vue ${version}`)
-console.log(emptyArray<number>(10).reduce(fib => [...fib, fib.at(-1)! + fib.at(-2)!], [1, 1]))
-```
+<!--
+IndexedDB의 작업 자체는 메인 스레드가 아닌 내부(다른) 스레드에서 처리된다
+단, 그 결과는 반드시 event loop(이벤트 루프)를 거쳐서, 메인 자바스크립트 코드(콜백/이벤트)의 실행 흐름으로 돌아온다
+즉, IndexedDB의 비동기적 동작 구조와 이벤트 루프 처리 메커니즘은 ‘서로 독립적’이지만,
+실제 자바스크립트 코드가 DB 결과를 받는 시점에서 이벤트 루프에 의존하게 된다
+→ 이 덕분에 UI가 멈추지 않으면서도 DB 결과를 잘 받아볼 수 있다
+-->
 
 ---
 layout: center
 class: text-center
 ---
 
-# Learn More
+# Q & A
 
-[Documentation](https://sli.dev) · [GitHub](https://github.com/slidevjs/slidev) · [Showcases](https://sli.dev/resources/showcases)
+<br/>
 
-<PoweredBySlidev mt-10 />
+### 감사합니다.
+
+<PoweredBySlidev mt-10 class="text-xs" />
